@@ -293,7 +293,7 @@ class MainActivity : MixActivity("main") {
 
     @OptIn(ExperimentalLayoutApi::class)
     fun fetchVideo(videoUrl: String) {
-        val url = extractUrls(videoUrl).firstOrNull()
+        val url = extractUrls(videoUrl).lastOrNull()
         if (url == null) {
             showToast("请输入正确的分享链接")
             return
