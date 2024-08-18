@@ -1,5 +1,7 @@
 package com.donut.tikdown
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -36,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -163,7 +166,25 @@ class MainActivity : MixActivity("main") {
                             Text(text = "解析")
                         }
                     }
-                    Text(text = "提示: 出现验证码解析失败再次重试即可", color = colorScheme.primary)
+                    Text(
+                        text = "开源地址: https://gitlab.com/ivgeek/TikDown",
+                        color = colorScheme.primary,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable {
+                            MixDialogBuilder("打开链接?").apply {
+                                setDefaultNegative()
+                                setPositiveButton("打开") {
+                                    val intent = Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://gitlab.com/ivgeek/TikDown")
+                                    )
+                                    closeDialog()
+                                    startActivity(intent)
+                                }
+                                show()
+                            }
+                        }
+                    )
                     resultContent()
                 }
             }
@@ -272,8 +293,10 @@ class MainActivity : MixActivity("main") {
         }
         resultContent = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(0.dp, 10.dp)
             ) {
+                Text(text = "视频信息: ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 InfoText(key = "视频id: ", value = id)
                 InfoText(key = "大小: ", value = formatFileSize(size))
                 InfoText(
