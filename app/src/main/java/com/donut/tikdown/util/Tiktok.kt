@@ -17,6 +17,7 @@ import com.donut.tikdown.app
 import com.donut.tikdown.appScope
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.onDownload
@@ -24,6 +25,7 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.userAgent
 import io.ktor.serialization.gson.gson
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.CancellableContinuation
@@ -57,7 +59,12 @@ suspend fun getVideoId(videoUrl: String): String {
     }
 }
 
+const val USER_AGENT = "Mozilla/5.0 (Linux; Android 13; 22081212C Build/TKQ1.220829.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile Safari/537.36 XWEB/1160043 MMWEBSDK/20231105 MMWEBID/4478 MicroMessenger/8.0.44.2502(0x28002C51) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
+
 val client = HttpClient(CIO) {
+    install(DefaultRequest) {
+        userAgent(USER_AGENT)
+    }
     install(ContentNegotiation) {
         gson()
     }
@@ -178,8 +185,7 @@ fun genClient(context: Context, task: CancellableContinuation<String>, videoUrl:
             allowUniversalAccessFromFileURLs = true
             allowContentAccess = true
             allowFileAccessFromFileURLs = true
-            userAgentString =
-                "Mozilla/5.0 (Linux; Android 13; 22081212C Build/TKQ1.220829.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile Safari/537.36 XWEB/1160043 MMWEBSDK/20231105 MMWEBID/4478 MicroMessenger/8.0.44.2502(0x28002C51) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
+            userAgentString = USER_AGENT
             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             cacheMode = WebSettings.LOAD_DEFAULT
             databaseEnabled = true

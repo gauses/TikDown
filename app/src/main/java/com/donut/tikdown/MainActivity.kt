@@ -50,15 +50,17 @@ import com.donut.tikdown.util.copyToClipboard
 import com.donut.tikdown.util.extractUrls
 import com.donut.tikdown.util.formatFileSize
 import com.donut.tikdown.util.getVideoId
+import com.donut.tikdown.util.ignoreError
 import com.donut.tikdown.util.isTrue
 import com.donut.tikdown.util.objects.MixActivity
 import com.donut.tikdown.util.readClipBoardText
 import com.donut.tikdown.util.saveFileToStorage
+import com.donut.tikdown.util.showError
 import com.donut.tikdown.util.showToast
+import io.ktor.client.request.get
 import io.ktor.client.request.head
 import io.ktor.client.request.url
 import io.ktor.http.contentLength
-import io.ktor.http.isSuccess
 import io.sanghun.compose.video.RepeatMode
 import io.sanghun.compose.video.VideoPlayer
 import io.sanghun.compose.video.controller.VideoPlayerControllerConfig
@@ -309,24 +311,34 @@ class MainActivity : MixActivity("main") {
                         val videoId = getVideoId(url)
                         val videoPlayUrl =
                             "https://www.douyin.com/aweme/v1/play/?video_id=${videoId}"
-                        val response = client.head {
+                        val playResponse = client.config {
+                            followRedirects = false
+                        }.get {
                             url(videoPlayUrl)
                         }
-                        if (!response.status.isSuccess()) {
+                        if (playResponse.status.value != 302) {
                             showToast("不支持广告或无法播放")
                             return@LaunchedEffect
                         }
-                        val size = response.contentLength()
+                        var size = 0L
+                        ignoreError {
+                            val videoSizeResponse = client.head {
+                                url(videoPlayUrl)
+                            }
+                            size = videoSizeResponse.contentLength() ?: size
+                        }
                         showToast("解析成功!")
-                        showVideoInfo(videoId, size ?: 0)
+                        showVideoInfo(videoId, size)
                     } catch (e: Exception) {
                         if (e is CancellationException && e !is TimeoutCancellationException) {
                             return@LaunchedEffect
                         }
+                        showError(e)
                         when (e.message) {
                             "不支持图文",
                             "不支持分段视频",
-                            "作品已失效" -> {
+                            "作品已失效",
+                            -> {
                                 showToast("解析失败(${e.message})")
                             }
 
