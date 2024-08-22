@@ -22,7 +22,7 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.plugins.timeout
-import io.ktor.client.request.get
+import io.ktor.client.request.prepareGet
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.userAgent
@@ -59,7 +59,8 @@ suspend fun getVideoId(videoUrl: String): String {
     }
 }
 
-const val USER_AGENT = "Mozilla/5.0 (Linux; Android 13; 22081212C Build/TKQ1.220829.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile Safari/537.36 XWEB/1160043 MMWEBSDK/20231105 MMWEBID/4478 MicroMessenger/8.0.44.2502(0x28002C51) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
+const val USER_AGENT =
+    "Mozilla/5.0 (Linux; Android 13; 22081212C Build/TKQ1.220829.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile Safari/537.36 XWEB/1160043 MMWEBSDK/20231105 MMWEBID/4478 MicroMessenger/8.0.44.2502(0x28002C51) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
 
 val client = HttpClient(CIO) {
     install(DefaultRequest) {
@@ -79,7 +80,7 @@ suspend fun saveFileToStorage(
     displayName: String,
     progress: ProgressContent,
     directory: String = Environment.DIRECTORY_DOWNLOADS,
-    storeUri: Uri = MediaStore.Files.getContentUri("external")
+    storeUri: Uri = MediaStore.Files.getContentUri("external"),
 ): Uri? {
     val resolver = app.contentResolver
     val contentValues = ContentValues().apply {
@@ -101,16 +102,19 @@ suspend fun saveFileToStorage(
             resolver.delete(fileUri, null)
         }
     }
-    fileUri?.let { uri ->
-        resolver.openOutputStream(uri)?.use { output ->
-            client.get {
-                timeout {
-                    requestTimeoutMillis = 1000 * 60 * 60
-                }
-                url(url)
-                onDownload(progress.ktorListener)
-            }.bodyAsChannel().toInputStream().use {
-                it.copyTo(output)
+    if (fileUri == null) {
+        return null
+    }
+    client.prepareGet {
+        timeout {
+            requestTimeoutMillis = 1000 * 60 * 60
+        }
+        url(url)
+        onDownload(progress.ktorListener)
+    }.execute {
+        resolver.openOutputStream(fileUri)?.use { output ->
+            it.bodyAsChannel().toInputStream().use { input ->
+                input.copyTo(output)
             }
         }
     }
@@ -132,7 +136,7 @@ fun genClient(context: Context, task: CancellableContinuation<String>, videoUrl:
 
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
-                request: WebResourceRequest?
+                request: WebResourceRequest?,
             ): Boolean {
                 val url = request?.url.toString()
                 if (url.contains("share/note/")) {
@@ -150,7 +154,7 @@ fun genClient(context: Context, task: CancellableContinuation<String>, videoUrl:
 
             override fun shouldInterceptRequest(
                 view: WebView?,
-                request: WebResourceRequest?
+                request: WebResourceRequest?,
             ): WebResourceResponse? {
                 val url = request?.url.toString()
                 if (url.contains("/captcha/")) {
