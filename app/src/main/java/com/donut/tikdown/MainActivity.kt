@@ -230,7 +230,7 @@ class MainActivity : MixActivity("main") {
             MixDialogBuilder("文件名称").apply {
                 var videoName by mutableStateOf("抖音下载")
                 if (videoUrl.contains("#")) {
-                    videoName = videoUrl.substringAfter("#").substringBefore("#")
+                    videoName = videoUrl.substringAfter("#").substringBefore("#").trim()
                 }
                 setContent {
                     OutlinedTextField(value = videoName, onValueChange = {
