@@ -167,23 +167,24 @@ class MainActivity : MixActivity("main") {
                         }
                     }
                     Text(
-                        text = "开源地址: https://gitlab.com/ivgeek/TikDown",
+                        text = "https://github.com/invertgeek/TikDown",
                         color = colorScheme.primary,
                         textDecoration = TextDecoration.Underline,
-                        modifier = Modifier.clickable {
-                            MixDialogBuilder("打开链接?").apply {
-                                setDefaultNegative()
-                                setPositiveButton("打开") {
-                                    val intent = Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse("https://gitlab.com/ivgeek/TikDown")
-                                    )
-                                    closeDialog()
-                                    startActivity(intent)
+                        modifier = Modifier
+                            .clickable {
+                                MixDialogBuilder("打开链接?").apply {
+                                    setDefaultNegative()
+                                    setPositiveButton("打开") {
+                                        val intent = Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("https://github.com/invertgeek/TikDown")
+                                        )
+                                        closeDialog()
+                                        startActivity(intent)
+                                    }
+                                    show()
                                 }
-                                show()
                             }
-                        }
                     )
                     resultContent()
                 }
@@ -361,7 +362,7 @@ class MainActivity : MixActivity("main") {
                             "不支持图文",
                             "不支持分段视频",
                             "作品已失效",
-                            -> {
+                                -> {
                                 showToast("解析失败(${e.message})")
                             }
 
