@@ -251,7 +251,7 @@ class MainActivity : MixActivity("main") {
 
 
     private suspend fun saveVideo(videoUrl: String) {
-        val name = selectVideoName()
+        val name = selectVideoName().replace(".","_")
         MixDialogBuilder(
             "下载中",
             properties = DialogProperties(dismissOnClickOutside = false)
