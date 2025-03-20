@@ -79,14 +79,14 @@ suspend fun saveFileToStorage(
     url: String,
     displayName: String,
     progress: ProgressContent,
-    directory: String = Environment.DIRECTORY_DOWNLOADS,
+    directory: String = Environment.DIRECTORY_DOWNLOADS ,
     storeUri: Uri = MediaStore.Files.getContentUri("external"),
 ): Uri? {
     val resolver = app.contentResolver
     val contentValues = ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
 //        put(MediaStore.MediaColumns.MIME_TYPE, "image/gif")
-        put(MediaStore.MediaColumns.RELATIVE_PATH, directory)
+        put(MediaStore.MediaColumns.RELATIVE_PATH, "${directory}/TikDown")
     }
 
 
